@@ -1,0 +1,67 @@
+﻿<Window x:Class="PriceCheck.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PriceCheck"
+        mc:Ignorable="d"
+        Title="Price Checker" Height="720" Width="1280"
+        WindowStartupLocation="CenterScreen"
+        Closing="Window_Closing">
+    
+    <Grid>
+        <DataGrid 
+            x:Name="ProductsGrid" 
+            CellStyle="{StaticResource BodyContentDataGridCentering}"
+            AutoGenerateColumns="False" 
+            HorizontalAlignment="Center" 
+            Margin="0,200,0,0" 
+            VerticalAlignment="Top" 
+            Loaded="dataGrid_Loaded" 
+            FontSize="16" 
+            FontFamily="Gill Sans" 
+            MouseDoubleClick="productsGrid_MouseDoubleClick" 
+            SelectionMode="Single" 
+            GridLinesVisibility="All" 
+            RowHeight="35">
+            <DataGrid.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                                        <Expander Name="expander" IsExpanded="True" Collapsed="expander_Pushed" Expanded="expander_Pushed" >
+                                            <Expander.Header>
+                                                <StackPanel >
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
+                                                    <TextBlock Text="{Binding ItemCount, StringFormat={}Items: {0}}" FontSize="9" />
+                                                </StackPanel>
+                                            </Expander.Header>
+                                            <ItemsPresenter />
+                                        </Expander>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                </GroupStyle>
+            </DataGrid.GroupStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Binding="{Binding pName}" IsReadOnly="True" MaxWidth="500" />
+                <DataGridHyperlinkColumn Header="URL" Binding="{Binding PUrl}" IsReadOnly="True" MaxWidth="500">
+                    <DataGridHyperlinkColumn.ElementStyle>
+                        <Style>
+                            <EventSetter Event="Hyperlink.Click" Handler="DG_Hyperlink_Click"/>
+                        </Style>
+                    </DataGridHyperlinkColumn.ElementStyle>
+                </DataGridHyperlinkColumn>
+                
+                <DataGridTextColumn Header="Price" Binding="{Binding pPrice}" IsReadOnly="True" MaxWidth="100" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button x:Name="AddNewBtn" Content="Add new" HorizontalAlignment="Center" Margin="-200,120,0,0" VerticalAlignment="Top" Width="75" Click="AddNew_Click"/>
+        <Button x:Name="EditBtn" Content="Edit" HorizontalAlignment="Center" Margin="200,120,0,0" VerticalAlignment="Top" Width="75" Click="Edit_Click"/>
+        <Button x:Name="DeleteBtn" Content="Delete" HorizontalAlignment="Center" Margin="0,120,0,0" VerticalAlignment="Top" Width="75" Click="DeleteBtn_Click"/>
+    </Grid>
+</Window>
