@@ -46,7 +46,7 @@
         <ComboBox x:Name="PTypeCombobox" Grid.Row="6" Grid.Column="2" HorizontalAlignment="Left" Margin="3" VerticalAlignment="Center" Width="120" />
 
         <Button Grid.Row="7" Grid.Column="2" x:Name="SaveBtn" Content="Save" HorizontalAlignment="Left" Margin="3" VerticalAlignment="Top" Width="75" Click="SaveBtn_Click"/>
-        <Button Grid.Row="7" Grid.Column="1" x:Name="FetchData" Content="Fetch data" HorizontalAlignment="Center" Margin="3" VerticalAlignment="Top" Width="75" Click="FetchData_Click"/>
+        <Button Grid.Row="7" Grid.Column="1" x:Name="FetchDataBtn" Content="Fetch data" HorizontalAlignment="Center" Margin="3" VerticalAlignment="Top" Width="75" Click="FetchDataBtn_Click"/>
         <Label x:Name="TestLabel" Content="Label" Grid.Column="3" HorizontalAlignment="Left" Margin="3" Grid.Row="4" VerticalAlignment="Top"/>
         <Label x:Name="ResultLabel" Content="Result" Grid.Column="3" HorizontalAlignment="Left" Margin="3" Grid.Row="1" VerticalAlignment="Top"/>
         <TextBox x:Name="testTextBox" Grid.Column="3" HorizontalAlignment="Left" Height="23" Margin="3" Grid.Row="2" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="500"/>

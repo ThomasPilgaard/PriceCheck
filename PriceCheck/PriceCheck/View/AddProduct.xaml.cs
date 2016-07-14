@@ -12,6 +12,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using PriceCheck.Model;
+using PriceCheck.Utility;
 
 namespace PriceCheck.View
 {
@@ -20,11 +22,16 @@ namespace PriceCheck.View
     /// </summary>
     public partial class AddProduct : Window
     {
-        public AddProduct()
+        private Product _addedProduct;
+        public AddProduct(Product _addedProduct)
         {
             InitializeComponent();
         }
-
+        private void AddProductBtn_Click(object sender, RoutedEventArgs e)
+        {
+            _addedProduct.PUrl = UrlTextBox.Text;
+            //TODO Gøre sådan connection kan nås her inde
+        }
         private void AddProduct_OnClosing(object sender, CancelEventArgs e)
         {
 

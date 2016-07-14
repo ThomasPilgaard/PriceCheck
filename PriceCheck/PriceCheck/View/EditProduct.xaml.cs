@@ -15,7 +15,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using PriceCheck.Model;
+using PriceCheck.Utility;
 
 namespace PriceCheck.View
 {
@@ -25,7 +27,7 @@ namespace PriceCheck.View
     public partial class EditProduct : Window
     {
         private Product _choosenProduct;
-        
+        //TODO Ryd op, evt alt gui op øverst, methods nederst
         public EditProduct(Product choosenProduct)
         {
             InitializeComponent();
@@ -48,24 +50,27 @@ namespace PriceCheck.View
         {
             if (UnsavedChanges())
             {
-                //MessageBox.Show("Unsaved changes.");
-                //TODO Evt lave det om til Yes No Cancel, "Do you want to save the changes?"
-                if (MessageBox.Show("There are unsaved changes. Do you wish do continue closing the window and destroy the changes?", "Unsaved changes", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No)
+                MessageBoxResult result = MessageBox.Show("Do you wish to save your changes?", "Closing the window", MessageBoxButton.YesNoCancel);
+                switch (result)
                 {
-                    e.Cancel = true;
-                }
-                else
-                {
-                     //do yes stuff, continue closing
+                    case MessageBoxResult.Yes:
+                        SaveData();
+                        break;
+                    case MessageBoxResult.No:
+                        break;
+                    case MessageBoxResult.Cancel:
+                        e.Cancel = true;
+                        break;
                 }
             }
         }
+
         private void SaveData()
         {
             _choosenProduct.pName = PNameTxtBox.Text;
             _choosenProduct.PUrl = PUrlTxtBox.Text;
             _choosenProduct.pNumber = PNumberTxtBox.Text;
-            _choosenProduct.pType = (Product.ProductType)PTypeCombobox.SelectedItem;
+            _choosenProduct.pType = (Product.ProductType) PTypeCombobox.SelectedItem;
             _choosenProduct.pPrice = CheckPriceFormat();
             _choosenProduct.PStockStatus = PStockStatus.Text;
         }
@@ -77,11 +82,10 @@ namespace PriceCheck.View
             {
                 try
                 {
-                    return returnVal = Math.Round(Convert.ToDouble(PPriceTxtBox.Text),2);
+                    return returnVal = Math.Round(Convert.ToDouble(PPriceTxtBox.Text), 2);
                 }
                 catch (FormatException)
                 {
-
                     MessageBox.Show("Please provide a price containing only numbers.", "Price contains letters.", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return returnVal;
                 }
@@ -92,156 +96,110 @@ namespace PriceCheck.View
 
         private bool UnsavedChanges()
         {
-            if (PNameTxtBox.Text != _choosenProduct.pName  ||
-                PUrlTxtBox.Text != _choosenProduct.PUrl ||
-                PNumberTxtBox.Text != _choosenProduct.pNumber ||
-                (Product.ProductType) PTypeCombobox.SelectedItem != _choosenProduct.pType ||
-                PPriceTxtBox.Text != _choosenProduct.pPrice.ToString("0.00") ||
-                PStockStatus.Text != _choosenProduct.PStockStatus)
+            return PNameTxtBox.Text != _choosenProduct.pName 
+                || PUrlTxtBox.Text != _choosenProduct.PUrl 
+                || PNumberTxtBox.Text != _choosenProduct.pNumber 
+                || (Product.ProductType) PTypeCombobox.SelectedItem != _choosenProduct.pType 
+                || PPriceTxtBox.Text != _choosenProduct.pPrice.ToString("0.00") 
+                || PStockStatus.Text != _choosenProduct.PStockStatus;
+        }
+
+        private void FetchDataBtn_Click(object sender, RoutedEventArgs e)
+        { 
+            FetchData();
+        }
+
+        public async void FetchData()
+        {
+            Regex urlRegex = new Regex(@"(https|http)://(www.)?.+?\.\w+");
+            Regex proshopUrlRegex = new Regex(@"(https|http)://(www.)?proshop\.dk");
+            Regex komplettUrlRegex = new Regex(@"^(https|http)://(www.)?komplett\.dk");
+
+            if (!string.IsNullOrEmpty(PUrlTxtBox.Text))
             {
-                return true;
+                if (urlRegex.IsMatch(PUrlTxtBox.Text))
+                {
+                    testTextBox.Text = urlRegex.Match(PUrlTxtBox.Text).ToString();
+                    if (proshopUrlRegex.IsMatch(PUrlTxtBox.Text) || komplettUrlRegex.IsMatch(PUrlTxtBox.Text))
+                    {
+                        string urlFromTextBox = PUrlTxtBox.Text;
+                        var downloadRawHtml = Task<string>.Factory.StartNew(() => FetchRawHtml(urlFromTextBox));
+                        TestLabel.Content = "Waiting";
+                        FetchDataBtn.IsEnabled = false;
+
+                        await downloadRawHtml;
+                        //TODO Evt. have mulighed for at cancel download.
+                        FetchDataBtn.IsEnabled = true;
+                        var rawHtml = downloadRawHtml.Result;
+                        TestLabel.Content = "Done";
+
+                        if (proshopUrlRegex.IsMatch(PUrlTxtBox.Text) && rawHtml != string.Empty)
+                        {
+                            AssignTexboxesProshop(rawHtml);
+                        }
+                        else if (komplettUrlRegex.IsMatch(PUrlTxtBox.Text) && rawHtml != string.Empty)
+                        {
+                            AssignTexboxesKomplett(rawHtml);
+                        }
+                    }
+                    else MessageBox.Show("Please provide a link to a supported website.");
+                }
+                else MessageBox.Show("Please provide a valid URL with \"http://\".");
             }
-            else return false;
+            else MessageBox.Show("Please enter a URL.");
         }
 
-        private void FetchData_Click(object sender, RoutedEventArgs e)
+        private void AssignTexboxesProshop(string rawHtml)
         {
-
-
-            //TODO Lav for Komplett
-
-            Regex proshopUrlRegex = new Regex(@"^(https|http)://www.proshop.dk/");
-            Regex komplettUrlRegex = new Regex(@"^(https|http)://www.komplett.dk");
-
-            if (proshopUrlRegex.IsMatch(_choosenProduct.PUrl))
+            var pScraper = new ProshopScraper();
+            if (pScraper.FetchProshopTitle(rawHtml) != string.Empty
+            || pScraper.FetchProshopPNumber(rawHtml) != string.Empty
+            || pScraper.FetchProshopPrice(rawHtml) != string.Empty
+            || pScraper.FetchProshopStockStatus(rawHtml) != string.Empty)
             {
-                //TODO evt. HTML decode Proshop titles
-                PPriceTxtBox.Text = FetchProshopPrice();
-                PNameTxtBox.Text = FetchProshopTitle();
-                PNumberTxtBox.Text = FetchProshopPNumber();
-                PStockStatus.Text = FetchProshopStockStatus();
-                testTextBox.Text = FetchProshopPType();
-                PTypeCombobox.SelectedItem = (Product.ProductType) Enum.Parse(typeof(Product.ProductType), productPTypeMapping(FetchProshopPType()));
+                PNameTxtBox.Text = pScraper.FetchProshopTitle(rawHtml);
+                PNumberTxtBox.Text = pScraper.FetchProshopPNumber(rawHtml);
+                PPriceTxtBox.Text = pScraper.FetchProshopPrice(rawHtml);
+                PStockStatus.Text = pScraper.FetchProshopStockStatus(rawHtml);
+                PTypeCombobox.SelectedItem =
+                    (Product.ProductType)
+                        Enum.Parse(typeof(Product.ProductType),
+                            pScraper.ProshopPTypeMapping(pScraper.FetchProshopPType(PUrlTxtBox.Text)));
             }
-            else if (komplettUrlRegex.IsMatch(_choosenProduct.PUrl))
+            else MessageBox.Show("No product found at the given URL.");
+        }
+
+        private void AssignTexboxesKomplett(string rawHtml)
+        {
+            var kScraper = new KomplettScraper();
+            if (kScraper.FetchKomplettTitle(rawHtml) != string.Empty
+                || kScraper.FetchKomplettPNumber(rawHtml) != string.Empty
+                || kScraper.FetchKomplettPrice(rawHtml) != string.Empty
+                || kScraper.FetchKomplettStockStatus(rawHtml) != string.Empty)
             {
-                PPriceTxtBox.Text = FetchKomplettPrice() + ".00";
-                PNameTxtBox.Text = FetchKomplettTitle();
-                PNumberTxtBox.Text = FetchKomplettPNumber();
-                PStockStatus.Text = FetchKomplettStockStatus();
-                PTypeCombobox.SelectedItem = (Product.ProductType)Enum.Parse(typeof(Product.ProductType), productPTypeMapping(FetchKomplettPType()));
-                TestLabel.Content = FetchKomplettPType();
+                PNameTxtBox.Text = kScraper.FetchKomplettTitle(rawHtml);
+                PNumberTxtBox.Text = kScraper.FetchKomplettPNumber(rawHtml);
+                PPriceTxtBox.Text = kScraper.FetchKomplettPrice(rawHtml) + ".00";
+                PStockStatus.Text = kScraper.FetchKomplettStockStatus(rawHtml);
+                PTypeCombobox.SelectedItem =
+                    (Product.ProductType)
+                        Enum.Parse(typeof(Product.ProductType),
+                            kScraper.KomplettPTypeMapping(kScraper.FetchKomplettPType(PUrlTxtBox.Text)));
             }
-            else MessageBox.Show("No match");
-
+            else MessageBox.Show("No product found at the given URL.");
         }
-#region KomplettRegex
-        private string FetchKomplettPrice()
+        private string FetchRawHtml(string urlFromPUrlTextBox)
         {
-            Regex komplettGetPrice = new Regex(@"<span class=""product-price-now"" itemprop=price content=(?<price>\d+)\.?(?<price2>\d+?)>");
-            string price = komplettGetPrice.Match(FetchRawHtml()).Groups["price"].ToString();
-            string price2 = komplettGetPrice.Match(FetchRawHtml()).Groups["price2"].ToString();
-            return price + price2;
-        }
-
-        private string FetchKomplettTitle()
-        {
-            Regex kompettGetPTitle = new Regex(@"<span data-bind=""text: hereText"">(?<title>.+?)<");
-            string title = WebUtility.HtmlDecode(kompettGetPTitle.Match(FetchRawHtml()).Groups["title"].ToString());
-            return title;
-        }
-
-        private string FetchKomplettPNumber()
-        {
-            Regex kompettGetPTitle = new Regex(@"<span itemprop=""sku"">(?<pNumber>\d+?)<");
-            string pNumber = kompettGetPTitle.Match(FetchRawHtml()).Groups["pNumber"].ToString();
-            return pNumber;
-        }
-
-        private string FetchKomplettStockStatus()
-        {
-            Regex kompettGetPStockStatus = new Regex(@"<span class=""stockstatus-stock-details"">(?<stockStatus>.+?)<");
-            string stockStatus = WebUtility.HtmlDecode(kompettGetPStockStatus.Match(FetchRawHtml()).Groups["stockStatus"].ToString());
-            return stockStatus;
-        }
-        private string FetchKomplettPType()
-        {
-            //TODO HDD og SSD har samme pType, kig på harddiskssd/ssd-25 
-            Regex proshopPType = new Regex(@"(https|http)://www.komplett.dk/product/\d+?/.+?/(?<pType>.+?)/");
-            string pType = proshopPType.Match(_choosenProduct.PUrl).Groups["pType"].ToString().TrimEnd();
-            return pType;
-        }
-        #endregion
-
-        #region ProshopRegex
-        private string productPTypeMapping(string pTypeString)
-        {
-            switch (pTypeString)
+            WebClient w = new WebClient {Encoding = Encoding.UTF8};
+            try
             {
-                case "Stroemforsyning":
-                    return "PSU";
-                case "Harddisk-SSD":
-                    return "SSD";
-                case "Harddisk":
-                    return "HDD";
-                case "CPU":
-                    return "CPU";
-                case "CPU-Koeler":
-                case "blaeserekoelerevandkoeling":
-                    return "Cooling";
-                case "Bundkort":
-                    return "MOBO";
-                case "Grafikkort":
-                case "grafikkort":
-                    return "GPU";
-                case "RAM":
-                    return "RAM";
-                case "Kabinet":
-                case "kabinetterbarebone":
-                    return "Case";
-                default:
-                    return "Misc";
+                return w.DownloadString(urlFromPUrlTextBox);
             }
-        }
-        private string FetchProshopPType()
-        {
-            Regex proshopPType = new Regex(@"(https|http)://www.proshop.dk/(?<pType>.+?)/");
-            string pType = proshopPType.Match(_choosenProduct.PUrl).Groups["pType"].ToString().TrimEnd();
-            return pType;
-        }
-        private string FetchProshopStockStatus()
-        {
-            //TODO Overvej at udvide med om den ikke er på lager/bestilt/på vej osv.
-            Regex proshopGetStockStatus = new Regex(@"<div class=""site-stock-text site-inline"" itemprop=""availability"" content="".+"">(?<stockStatus>.+)<");
-            string stockStatus = WebUtility.HtmlDecode(proshopGetStockStatus.Match(FetchRawHtml()).Groups["stockStatus"].ToString().TrimEnd());
-            return stockStatus;
-        }
-        private string FetchProshopPrice()
-        {
-            Regex proshopGetPriceTag = new Regex(@"<span class=""site-currency-attention"" itemprop=""price"" content=""(?<price>\d+\.\d+)");
-            string price = proshopGetPriceTag.Match(FetchRawHtml()).Groups["price"].ToString().TrimEnd();
-            return price;
-        }
-
-        private string FetchProshopTitle()
-        {
-            Regex proshopGetName = new Regex(@"<h1 itemprop=""name""\s+\n\s+data-productid=""\d+""\s+\n\s+data-siteid="".+"">\s+\n\s+(?<name>.+)");
-            string name = proshopGetName.Match(FetchRawHtml()).Groups["name"].ToString().TrimEnd();
-            return name;
-        }
-
-        private string FetchProshopPNumber()
-        {
-            Regex proshopGetPNumber = new Regex(@"<h1 itemprop=""name"".+\n.+data-productid=""(?<pNumber>\d+)""");
-            string pNumber = proshopGetPNumber.Match(FetchRawHtml()).Groups["pNumber"].ToString().TrimEnd();
-            return pNumber;
-        }
-#endregion
-        private string FetchRawHtml()
-        {
-            WebClient w = new WebClient();
-            string rawProductHtml = w.DownloadString(_choosenProduct.PUrl);
-            return rawProductHtml;
+            catch (Exception)
+            {
+                MessageBox.Show("Cannot connect to \"" + urlFromPUrlTextBox + "\"");
+                return string.Empty;
+            }
         }
     }
 }

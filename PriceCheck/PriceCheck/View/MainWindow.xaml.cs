@@ -24,7 +24,8 @@ namespace PriceCheck.View
 
         private void dataGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            //TODO Vise lagerstatus på en god måde
+            //TODO Vise lagerstatus på en god måde.
+            //TODO evt have en checkbox efter pris, hvor når markeres indgår varen i en total pris.
             Product asdf1 = new Product("https://www.proshop.dk/Stroemforsyning/CX650M-650W-PSU/2537705");
             asdf1.pName = "Corsair CX650M - 650W PSU";
             asdf1.pNumber = "2537705";
@@ -97,7 +98,7 @@ namespace PriceCheck.View
 
         private void AddNew_Click(object sender, RoutedEventArgs e)
         {
-            //TODO evt lave add product om til at der gives et link, data findes selv og derefter kan der laves om på productet
+            /*//TODO evt lave add product om til at der gives et link, data findes selv og derefter kan der laves om på productet
             var addedProduct = new Product(string.Empty) {pName = string.Empty, pNumber = string.Empty, pPrice = 0, pType = Product.ProductType.Misc, PStockStatus = string.Empty};
             EditProduct addProduct = new EditProduct(addedProduct);
             addProduct.ShowDialog();
@@ -110,6 +111,10 @@ namespace PriceCheck.View
             {
                 products.Add(addedProduct);
             }
+            */
+            var addedProduct = new Product(string.Empty) {pName = string.Empty, pNumber = string.Empty, pPrice = 0, pType = Product.ProductType.Misc, PStockStatus = string.Empty};
+            AddProduct addProduct = new AddProduct(addedProduct);
+            addProduct.ShowDialog();
             UpdateGrid();
         }
 

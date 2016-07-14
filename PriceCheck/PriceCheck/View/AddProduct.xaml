@@ -5,10 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PriceCheck.View"
         mc:Ignorable="d"
-        Title="AddProduct" Height="720" Width="1280"
+        Title="AddProduct" Height="100" Width="500"
         WindowStartupLocation="CenterScreen"
         Closing="AddProduct_OnClosing">
     <Grid>
-        
+        <TextBox x:Name="UrlTextBox" HorizontalAlignment="Left" Height="23" Margin="3" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <Button x:Name="AddProductBtn" Content="Add product" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="300,3,3,0" Click="AddProductBtn_Click"/>
+
     </Grid>
 </Window>

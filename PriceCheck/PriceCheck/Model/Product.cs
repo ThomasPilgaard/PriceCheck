@@ -32,6 +32,7 @@ namespace PriceCheck.Model
             RAM,
             SSD,
             HDD,
+            Monitor,
             Misc
         }
     }
