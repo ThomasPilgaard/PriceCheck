@@ -98,23 +98,18 @@ namespace PriceCheck.View
 
         private void AddNew_Click(object sender, RoutedEventArgs e)
         {
-            /*//TODO evt lave add product om til at der gives et link, data findes selv og derefter kan der laves om på productet
             var addedProduct = new Product(string.Empty) {pName = string.Empty, pNumber = string.Empty, pPrice = 0, pType = Product.ProductType.Misc, PStockStatus = string.Empty};
-            EditProduct addProduct = new EditProduct(addedProduct);
+            AddProduct addProduct = new AddProduct(addedProduct);
             addProduct.ShowDialog();
-            if (addedProduct.PUrl != string.Empty || 
-                addedProduct.pName != string.Empty || 
-                addedProduct.pNumber != string.Empty || 
-                !addedProduct.pPrice.Equals(0) || 
+            if (addedProduct.PUrl != string.Empty ||
+                addedProduct.pName != string.Empty ||
+                addedProduct.pNumber != string.Empty ||
+                !addedProduct.pPrice.Equals(0) ||
                 addedProduct.pType != Product.ProductType.Misc ||
                 addedProduct.PStockStatus != string.Empty)
             {
                 products.Add(addedProduct);
             }
-            */
-            var addedProduct = new Product(string.Empty) {pName = string.Empty, pNumber = string.Empty, pPrice = 0, pType = Product.ProductType.Misc, PStockStatus = string.Empty};
-            AddProduct addProduct = new AddProduct(addedProduct);
-            addProduct.ShowDialog();
             UpdateGrid();
         }
 

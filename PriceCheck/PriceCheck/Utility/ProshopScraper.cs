@@ -23,13 +23,16 @@ namespace PriceCheck.Utility
         }
         public string FetchProshopPrice(string rawHtml)
         {
-            Regex proshopGetPriceTag = new Regex(@"<span class=""site-currency-attention"" itemprop=""price"" content=""(?<price>\d+\.\d+)");
-            return proshopGetPriceTag.Match(rawHtml).Groups["price"].ToString().TrimEnd();
-        }
+            Regex proshopGetPriceTag = new Regex(@"<span class=""site-currency-attention""><span class=""text-right"">((?<price1>\d+?)\.)?(?<price2>\d+?),(?<price3>\d+)");
+            return proshopGetPriceTag.Match(rawHtml).Groups["price1"].ToString() +
+                   proshopGetPriceTag.Match(rawHtml).Groups["price2"].ToString() +
+                   "." +
+                   proshopGetPriceTag.Match(rawHtml).Groups["price3"].ToString();
+        }//
         public string FetchProshopStockStatus(string rawHtml)
         {
             //TODO Overvej at udvide med om den ikke er på lager/bestilt/på vej osv.
-            Regex proshopGetStockStatus = new Regex(@"<div class=""site-stock-text site-inline"" itemprop=""availability"" content="".+"">(?<stockStatus>.+)<");
+            Regex proshopGetStockStatus = new Regex(@"<div class=""site-stock-text site-inline"">(?<stockStatus>.+)<");
             return WebUtility.HtmlDecode(proshopGetStockStatus.Match(rawHtml).Groups["stockStatus"].ToString().TrimEnd());
         }
         public string FetchProshopPType(string pUrl)

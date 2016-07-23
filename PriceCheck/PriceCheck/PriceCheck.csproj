@@ -56,6 +56,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Exceptions\PriceContainsCommaException.cs" />
+    <Compile Include="Exceptions\PriceTooLongException.cs" />
+    <Compile Include="Utility\CheckPrice.cs" />
+    <Compile Include="Utility\DownloadData.cs" />
     <Compile Include="Utility\KomplettScraper.cs" />
     <Compile Include="Utility\ProshopScraper.cs" />
     <Compile Include="View\AddProduct.xaml.cs">

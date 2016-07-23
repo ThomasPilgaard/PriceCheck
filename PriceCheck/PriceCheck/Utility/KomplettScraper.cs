@@ -23,7 +23,9 @@ namespace PriceCheck.Utility
         public string FetchKomplettPrice(string rawHtml)
         {
             Regex komplettGetPrice = new Regex(@"<span class=""product-price-now"" itemprop=price content=(?<price>\d+)\.?(?<price2>\d+?)>");
-            return komplettGetPrice.Match(rawHtml).Groups["price"].ToString() + komplettGetPrice.Match(rawHtml).Groups["price2"].ToString();
+            return komplettGetPrice.Match(rawHtml).Groups["price"].ToString() + 
+                komplettGetPrice.Match(rawHtml).Groups["price2"].ToString() + 
+                ".00";
         }
         public string FetchKomplettStockStatus(string rawHtml)
         {

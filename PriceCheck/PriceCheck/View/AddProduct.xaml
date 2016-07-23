@@ -9,8 +9,15 @@
         WindowStartupLocation="CenterScreen"
         Closing="AddProduct_OnClosing">
     <Grid>
-        <TextBox x:Name="UrlTextBox" HorizontalAlignment="Left" Height="23" Margin="3" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <Button x:Name="AddProductBtn" Content="Add product" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="300,3,3,0" Click="AddProductBtn_Click"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBox Grid.Column="0" Grid.Row="0" x:Name="AddProductUrlTextBox" HorizontalAlignment="Left" Height="23" Margin="3" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="380"/>
+        <Button Grid.Column="1" Grid.Row="0" x:Name="AddProductBtn" Content="Add product" HorizontalAlignment="Center" VerticalAlignment="Center" Width="75" Margin="3" Click="AddProductBtn_Click"/>
 
     </Grid>
 </Window>
